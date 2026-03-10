@@ -49,8 +49,10 @@ You should see:
 The connection string in `.env` should follow this format:
 
 ```
-MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/YOUR_DATABASE?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://[username]:[password]@[cluster].mongodb.net/[database]?retryWrites=true&w=majority
 ```
+
+Replace the bracketed placeholders with your actual Atlas credentials.
 
 **Important**: If your password contains special characters, you need to URL-encode them:
 - `@` → `%40`
