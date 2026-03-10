@@ -1,7 +1,8 @@
-import requests
+import httpx
 import json
 from typing import Dict, Optional
 from urllib.parse import urlparse
+import asyncio
 
 class SocialProfileScraper:
     """Scraper for Codeforces, LeetCode, and LinkedIn profiles"""
@@ -50,7 +51,7 @@ class SocialProfileScraper:
             print(f"Error extracting username: {e}")
             return None
     
-    def scrape_codeforces(self, url: str) -> Dict:
+    async def scrape_codeforces(self, url: str) -> Dict:
         """Scrape Codeforces profile data"""
         username = self.extract_username_from_url(url, "codeforces")
         
@@ -58,38 +59,39 @@ class SocialProfileScraper:
             return {"error": "Invalid Codeforces URL", "platform": "codeforces"}
         
         try:
-            # Get user info
-            user_response = requests.get(f"{self.codeforces_api}/user.info?handles={username}")
-            user_data = user_response.json()
-            
-            if user_data.get("status") != "OK":
-                return {"error": "User not found", "platform": "codeforces", "username": username}
-            
-            user = user_data["result"][0]
-            
-            # Get user rating history
-            rating_response = requests.get(f"{self.codeforces_api}/user.rating?handle={username}")
-            rating_data = rating_response.json()
-            
-            contests_participated = len(rating_data.get("result", [])) if rating_data.get("status") == "OK" else 0
-            
-            return {
-                "platform": "codeforces",
-                "username": user.get("handle"),
-                "rating": user.get("rating"),
-                "max_rating": user.get("maxRating"),
-                "rank": user.get("rank"),
-                "max_rank": user.get("maxRank"),
-                "contribution": user.get("contribution"),
-                "contests_participated": contests_participated,
-                "friend_count": user.get("friendOfCount"),
-                "profile_url": url
-            }
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                # Get user info
+                user_response = await client.get(f"{self.codeforces_api}/user.info?handles={username}")
+                user_data = user_response.json()
+                
+                if user_data.get("status") != "OK":
+                    return {"error": "User not found", "platform": "codeforces", "username": username}
+                
+                user = user_data["result"][0]
+                
+                # Get user rating history
+                rating_response = await client.get(f"{self.codeforces_api}/user.rating?handle={username}")
+                rating_data = rating_response.json()
+                
+                contests_participated = len(rating_data.get("result", [])) if rating_data.get("status") == "OK" else 0
+                
+                return {
+                    "platform": "codeforces",
+                    "username": user.get("handle"),
+                    "rating": user.get("rating"),
+                    "max_rating": user.get("maxRating"),
+                    "rank": user.get("rank"),
+                    "max_rank": user.get("maxRank"),
+                    "contribution": user.get("contribution"),
+                    "contests_participated": contests_participated,
+                    "friend_count": user.get("friendOfCount"),
+                    "profile_url": url
+                }
         
         except Exception as e:
             return {"error": str(e), "platform": "codeforces", "username": username}
 
-    def scrape_leetcode(self, url: str) -> Dict:
+    async def scrape_leetcode(self, url: str) -> Dict:
         """Scrape LeetCode profile data using community API"""
         username = self.extract_username_from_url(url, "leetcode")
         
@@ -97,41 +99,42 @@ class SocialProfileScraper:
             return {"error": "Invalid LeetCode URL", "platform": "leetcode"}
         
         try:
-            # Using leetcode-stats-api (more reliable for stats)
-            api_url = f"https://leetcode-stats-api.herokuapp.com/{username}"
-            response = requests.get(api_url, timeout=15)
-            
-            if response.status_code != 200:
-                return {"error": "User not found or API unavailable", "platform": "leetcode", "username": username}
-            
-            data = response.json()
-            
-            # Check if the API returned an error
-            if data.get("status") == "error":
-                return {"error": data.get("message", "Unknown error"), "platform": "leetcode", "username": username}
-            
-            return {
-                "platform": "leetcode",
-                "username": username,
-                "ranking": data.get("ranking"),
-                "reputation": data.get("reputation"),
-                "total_solved": data.get("totalSolved"),
-                "total_questions": data.get("totalQuestions"),
-                "easy_solved": data.get("easySolved"),
-                "total_easy": data.get("totalEasy"),
-                "medium_solved": data.get("mediumSolved"),
-                "total_medium": data.get("totalMedium"),
-                "hard_solved": data.get("hardSolved"),
-                "total_hard": data.get("totalHard"),
-                "acceptance_rate": data.get("acceptanceRate"),
-                "contribution_points": data.get("contributionPoints"),
-                "profile_url": url
-            }
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                # Using leetcode-stats-api (more reliable for stats)
+                api_url = f"https://leetcode-stats-api.herokuapp.com/{username}"
+                response = await client.get(api_url)
+                
+                if response.status_code != 200:
+                    return {"error": "User not found or API unavailable", "platform": "leetcode", "username": username}
+                
+                data = response.json()
+                
+                # Check if the API returned an error
+                if data.get("status") == "error":
+                    return {"error": data.get("message", "Unknown error"), "platform": "leetcode", "username": username}
+                
+                return {
+                    "platform": "leetcode",
+                    "username": username,
+                    "ranking": data.get("ranking"),
+                    "reputation": data.get("reputation"),
+                    "total_solved": data.get("totalSolved"),
+                    "total_questions": data.get("totalQuestions"),
+                    "easy_solved": data.get("easySolved"),
+                    "total_easy": data.get("totalEasy"),
+                    "medium_solved": data.get("mediumSolved"),
+                    "total_medium": data.get("totalMedium"),
+                    "hard_solved": data.get("hardSolved"),
+                    "total_hard": data.get("totalHard"),
+                    "acceptance_rate": data.get("acceptanceRate"),
+                    "contribution_points": data.get("contributionPoints"),
+                    "profile_url": url
+                }
         
         except Exception as e:
             return {"error": str(e), "platform": "leetcode", "username": username}
     
-    def scrape_linkedin(self, url: str) -> Dict:
+    async def scrape_linkedin(self, url: str) -> Dict:
         """Scrape LinkedIn profile data using ScrapingDog or Bright Data API"""
         
         if not self.linkedin_api_key:
@@ -144,9 +147,9 @@ class SocialProfileScraper:
         
         try:
             if self.linkedin_provider == "scrapingdog":
-                return self._scrape_linkedin_scrapingdog(url)
+                return await self._scrape_linkedin_scrapingdog(url)
             elif self.linkedin_provider == "brightdata":
-                return self._scrape_linkedin_brightdata(url)
+                return await self._scrape_linkedin_brightdata(url)
             else:
                 return {
                     "platform": "linkedin",

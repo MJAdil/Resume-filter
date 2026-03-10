@@ -1,9 +1,25 @@
-flask==3.0.0
-flask-cors==4.0.0
+# FastAPI and async dependencies
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# MongoDB async driver
+motor==3.3.2
+pymongo==4.6.1
+
+# ML and embeddings
 numpy<2.0.0
 sentence-transformers==2.3.0
 transformers==4.34.0
-python-dotenv==1.0.0
-requests==2.31.0
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.1.0+cpu
+
+# Utilities
+python-dotenv==1.0.0
+httpx==0.26.0
+
+# Legacy Flask (for gradual migration)
+flask==3.0.0
+flask-cors==4.0.0
+requests==2.31.0
