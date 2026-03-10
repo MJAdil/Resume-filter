@@ -49,7 +49,7 @@ You should see:
 The connection string in `.env` should follow this format:
 
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster0.tx5lv.mongodb.net/database_name?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/YOUR_DATABASE?retryWrites=true&w=majority
 ```
 
 **Important**: If your password contains special characters, you need to URL-encode them:

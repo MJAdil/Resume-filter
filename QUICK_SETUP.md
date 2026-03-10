@@ -29,7 +29,7 @@ cp .env.example .env
 
 # Edit .env with your MongoDB URI and API keys
 # For local MongoDB: mongodb://localhost:27017/resume_filter
-# For Atlas: mongodb+srv://username:password@cluster.mongodb.net/resume_filter
+# For Atlas: mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/resume_filter
 ```
 
 ### 3. Frontend Setup
